@@ -27,7 +27,7 @@ def check_key(key: str) -> dict:
 
 
 if __name__ == '__main__':
-    key = "9965b3a9-545c-41ab-8e14-40529f37f5a3"
+    key = ""
     result = check_key(key)
     import pprint
     pprint.pprint(result)
