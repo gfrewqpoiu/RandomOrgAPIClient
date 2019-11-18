@@ -1,4 +1,5 @@
 import httpx
+import os
 from typing import Tuple
 
 
@@ -27,7 +28,9 @@ def check_key(key: str) -> dict:
 
 
 if __name__ == '__main__':
-    key = ""
+    if 'RANDOM_ORG_API_KEY' not in os.environ:
+        raise EnvironmentError("Plesse specify your Random.org API key in the environment var: RANDOM_ORG_API_KEY")
+    key = os.environ['RANDOM_ORG_API_KEY']
     result = check_key(key)
     import pprint
     pprint.pprint(result)
