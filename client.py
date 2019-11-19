@@ -1,46 +1,56 @@
 import httpx
 import os
-from typing import Tuple
+import warnings
+from typing import Dict, Any
+
+base_url = "https://api.random.org/json-rpc/2/invoke"
 
 
-baseurl = "https://api.random.org/json-rpc/2/invoke"
-id = 0
-apikey = ""
-
-
-def prepare_json(method: str, params: dict) -> Tuple[dict, int]:
-    global id
-    id += 1
-    return {'jsonrpc': '2.0', 'method': method, 'params': params, 'id': id}, id
-
-
-def _filter(id: int, result: dict) -> dict:
-    assert id == result['id']
+def _filter(id: int, result: Dict[str, Any]) -> Dict[str, Any]:
+    assert id == result['id']  # Check that the ID of the result is what we expect.
     if "error" in result.keys():
         raise AttributeError(result["error"]['message'])
     else:
         return result['result']
 
 
-def getUsage(key: str) -> dict:
-    data, id = prepare_json('getUsage', {'apiKey': key})
-    resp = httpx.post(baseurl, json=data)
-    return _filter(id, resp.json())
+class RandomOrgClient:
+    def __init__(self, apiKey: str):
+        self.apiKey = apiKey
+        self.id = 0
+        try:
+            self.status = self.getUsage()['status']
+        except AttributeError:
+            raise AttributeError("The provided API Key is not valid.")
+        if self.status == "stopped":
+            raise AttributeError("The provided API Key is stopped.")
+        elif self.status != "running":
+            warnings.warn("The provided API Key is in a unknown state.")
 
-def generateIntegers(amount: int, min: int, max: int, with_replacement: bool=True, base: int = 10):
-    request_json, id = prepare_json("generateIntegers",
-                                {'apiKey': apikey, 'n': amount, 'min': min, 'max': max,
-                                 'replacement': with_replacement, 'base': base})
-    resp = httpx.post(baseurl, json=request_json)
-    resp = _filter(id, resp.json())
-    return resp['random']['data']
+    def getUsage(self) -> dict:
+        data = self._prepare_json('getUsage', {})
+        resp = httpx.post(base_url, json=data)
+        return _filter(self.id, resp.json())
+
+    def generateIntegers(self, amount: int, min: int, max: int, with_replacement: bool = True, base: int = 10):
+        request_json = self._prepare_json("generateIntegers",
+                                         {'n': amount, 'min': min, 'max': max,
+                                          'replacement': with_replacement, 'base': base})
+        resp = httpx.post(base_url, json=request_json)
+        resp = _filter(self.id, resp.json())
+        return resp['random']['data']
+
+    def _prepare_json(self, method: str, params: dict) -> Dict[str, Any]:
+        self.id += 1
+        params.update({'apiKey': self.apiKey})
+        return {'jsonrpc': '2.0', 'method': method, 'params': params, 'id': self.id}
+
 
 if __name__ == '__main__':
     if 'RANDOM_ORG_API_KEY' not in os.environ:
         raise EnvironmentError("Plesse specify your Random.org API key in the environment var: RANDOM_ORG_API_KEY")
-    apikey = os.environ['RANDOM_ORG_API_KEY']
-    result = getUsage(apikey)
+    client = RandomOrgClient(os.environ['RANDOM_ORG_API_KEY'])
     import pprint
-    pprint.pprint(result)
-    integers_res = generateIntegers(10, 1, 6)
+    pprint.pprint(client.status)
+    integers_res = client.generateIntegers(10, 1, 6)
     pprint.pprint(integers_res)
