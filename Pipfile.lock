@@ -53,17 +53,17 @@
         },
         "hstspreload": {
             "hashes": [
-                "sha256:bf3fe200e3ef9847bb52242037719650d908ae79e976d1610a9bdc5f49c99473"
+                "sha256:448c5b9505954881bd51cf08f8ef34bb41a5bc95160815b3c830175580480f5a"
             ],
-            "version": "==2019.11.4"
+            "version": "==2019.11.18"
         },
         "httpx": {
             "hashes": [
-                "sha256:03144a9a5a8bc52c95e397eb5cb0db02cf4cdc89f08c09dded871c0269486073",
-                "sha256:f6c079c736462f983dfe63e037f77da65af231bebd5d507de0ab966592441a8f"
+                "sha256:26ed044a022df971fe599a256036eaf621353e3135fffa1d9e72338d9bd60e08",
+                "sha256:97646a1ce129ce0b5b53934615a6f6236f08d43666b450c3974433d0e717ecfb"
             ],
             "index": "pypi",
-            "version": "==0.7.6"
+            "version": "==0.7.7"
         },
         "hyperframe": {
             "hashes": [
