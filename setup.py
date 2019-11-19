@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Kevin Striek",
     author_email="Kevin.Striek@gmail.com",
-    py_modules=["client"],
+    py_modules=["RandomOrgAPIClient"],
     install_requires=[
         "httpx>=0.7.7",
     ])

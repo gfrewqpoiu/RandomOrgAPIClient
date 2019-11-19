@@ -1,5 +1,6 @@
 import httpx
 import os
+import asyncio
 import warnings
 from typing import Dict, Any
 
@@ -18,6 +19,7 @@ class RandomOrgClient:
     def __init__(self, apiKey: str):
         self.apiKey = apiKey
         self.id = 0
+        self.AsyncClient = httpx.AsyncClient()
         try:
             self.status = self.getUsage()['status']
         except AttributeError:
@@ -32,11 +34,11 @@ class RandomOrgClient:
         resp = httpx.post(base_url, json=data)
         return _filter(self.id, resp.json())
 
-    def generateIntegers(self, amount: int, min: int, max: int, with_replacement: bool = True, base: int = 10):
+    async def generateIntegers(self, amount: int, min: int, max: int, with_replacement: bool = True, base: int = 10):
         request_json = self._prepare_json("generateIntegers",
                                          {'n': amount, 'min': min, 'max': max,
                                           'replacement': with_replacement, 'base': base})
-        resp = httpx.post(base_url, json=request_json)
+        resp = await self.AsyncClient.post(base_url, json=request_json)
         resp = _filter(self.id, resp.json())
         return resp['random']['data']
 
@@ -46,11 +48,15 @@ class RandomOrgClient:
         return {'jsonrpc': '2.0', 'method': method, 'params': params, 'id': self.id}
 
 
-if __name__ == '__main__':
+async def main():
     if 'RANDOM_ORG_API_KEY' not in os.environ:
         raise EnvironmentError("Plesse specify your Random.org API key in the environment var: RANDOM_ORG_API_KEY")
     client = RandomOrgClient(os.environ['RANDOM_ORG_API_KEY'])
     import pprint
     pprint.pprint(client.status)
-    integers_res = client.generateIntegers(10, 1, 6)
+    integers_res = await client.generateIntegers(10, 1, 6)
     pprint.pprint(integers_res)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
